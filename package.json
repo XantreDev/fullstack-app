@@ -1,0 +1,13 @@
+{
+  "name": "fullstack-app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^7.1.0"
+  },
+  "scripts": {
+    "start:install": "cd client && yarn install && cd ../server && yarn install",
+    "start": "concurrently \"cd client && yarn start \" \" cd server && yarn dev \""
+  }
+}
