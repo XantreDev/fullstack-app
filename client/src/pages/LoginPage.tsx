@@ -48,7 +48,7 @@ const LoginPage = () => {
         />
         <Button
           sx={{
-            bgcolor: blue[800],
+            bgcolor: "#1976d2",
             color: "white",
             ":hover": {
               bgcolor: blue[400],

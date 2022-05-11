@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import { AppBar, Box, Button, IconButton, Toolbar, Typography } from '@mui/material';
 import React, { useContext, useEffect, useState } from 'react';
 import './App.css';
 import { axiosConfig } from './constants';
@@ -8,7 +8,7 @@ import LoginPage from './pages/LoginPage';
 import MainPage from './pages/MainPage';
 
 function App() {
-  const { isLogined, setIsLogined } = useContext(loginContext)
+  const { isLogined, logout } = useContext(loginContext)
   
   const { isLoading } = useFetchWithLogin({
     method: 'get',
@@ -17,6 +17,16 @@ function App() {
 
   return (
     <>
+     <Box sx={{ flexGrow: 1 }}>
+      <AppBar position="fixed">
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Users List
+          </Typography>
+          { isLogined && <Button onClick={ logout } color="inherit">Logout</Button> }
+        </Toolbar>
+      </AppBar>
+    </Box>
       {
         (() => {
           if (isLoading) return <>Loading</>

@@ -1,3 +1,5 @@
+import { ObjectId } from "mongodb"
+
 export type UserInfo = {
   name: string,
   surname: string,
@@ -5,3 +7,5 @@ export type UserInfo = {
   birthday: string,
   profession: string
 }
+
+export type UserInfoMongo = UserInfo & { _id: ObjectId }

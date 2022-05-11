@@ -1,4 +1,5 @@
-import { UserInfo } from './../types/user';
+import { getRandomValuesInRange } from './../helpers/get';
+import { UserInfo, UserInfoMongo } from './../types/user';
 import dayjs from 'dayjs';
 import md5 from 'md5';
 import { MongoClient } from 'mongodb'
@@ -44,9 +45,9 @@ export const isAuthed = async (sessionKey: string) => {
     await client.connect()
     const database = await client.db("testDB");
     const collection = await database.collection('users')
-    const result = await collection.findOne({
+    const result = (await collection.findOne({
       sessionKey
-    })
+    }) as unknown) as LoginDataMongo | null
     if (result === null) {
       return false
     }
@@ -59,6 +60,24 @@ export const isAuthed = async (sessionKey: string) => {
   }
 }
 
+export const isAdmin = async (sessionKey: string) => {
+  try {
+    await client.connect()
+    const database = await client.db("testDB");
+    const collection = await database.collection('users')
+    const result = (await collection.findOne({
+      sessionKey
+    }) as unknown) as LoginDataMongo | null
+    if (result === null) {
+      return false
+    }
+    console.log("success")
+    return dayjs().isBefore(dayjs(result?.endTime)) && (result?.isAdmin ?? false)
+  } catch (error) {
+    console.log(error)
+    return false
+  }
+}
 
 
 export const getSession = async (login: string, password: string) => {
@@ -71,9 +90,9 @@ export const getSession = async (login: string, password: string) => {
     const result = await collection.findOne({
       login,
       password: hash
-    })
+    }) as LoginDataMongo
     if (result === null) {
-      return null
+      throw '' 
     }
     const sessionKey = md5((+dayjs()).toString()) + md5(login)
 
@@ -84,18 +103,29 @@ export const getSession = async (login: string, password: string) => {
       login,
       password: hash,
       endTime: dayjs().add(1, 'day').toISOString(),
+      isAdmin: result?.isAdmin ?? false,
       sessionKey,
-      sdf: 1
     } as LoginDataMongo), {
       upsert: true,
       writeConcern: true
     })
 
     console.log("success")
-    return sessionKey
+    return { sessionKey, isAdmin: result?.isAdmin ?? false }
   } catch (error) {
     console.log(error)
-    return null
+    return { sessionKey: null, isAdmin: null }
+  }
+}
+
+export const deleteUserFromDbByEmail = async (email: string) => {
+  try {
+    const collection = await getUsersList()
+    const result = await collection.deleteOne({ email })
+    return result.deletedCount
+  } catch (error) {
+    console.log(error)
+    return false
   }
 }
 
@@ -124,10 +154,11 @@ export const getUsersFromDb = async () => {
   try {
     const collection = await getUsersList()
 
+    const result = await collection.find({}).limit(1000).toArray() as UserInfoMongo[]
+    console.log(result.length)
+    const indexes = getRandomValuesInRange(0, result.length, 10)
 
-    const result = await collection.find({}).limit(10).toArray()
-    console.log(result)
-    return result    
+    return indexes.map(index => result[index])    
   } catch (error) {
     console.log(error)
     return []

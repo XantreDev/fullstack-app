@@ -28,20 +28,31 @@
 }
 
 .Main__container {
-  width: 50vw;
+  width: 600px;
+  max-width: calc(80vw + 40px * 2);
+
   padding: 40px 40px;
   border-radius: 5px;
   box-shadow: 2px 2px 4px rgb(0 0 0 / .2);
   background-color: rgb(0, 229, 255);
 
-
   display: inherit;
   justify-content: inherit;
-  align-items: inherit;
+  align-items: right;
   flex-direction: inherit;
 }
 
-.Main__container > * {
+
+.Main__container > *:not(.Main__container__refresh) {
   width: 500px;
   max-width: 80vw;
+}
+
+.Main__container__refresh {
+  width: 100%;
+  max-width: 99999px;
+  margin-top: 40px;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row-reverse;
 }

@@ -1,12 +1,14 @@
 import { getKey } from './helpers/get';
 import { generateUsers } from './helpers/generate';
-import { addUsersToDb, getUsersFromDb } from './db/index';
+import { addUsersToDb, deleteUserFromDbByEmail, getUsersFromDb, isAdmin } from './db';
 import { LoginData, LoginDataMongo } from './types/auth';
 import express from 'express'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import { getSession, isAuthed } from './db';
+import authRouter from './router/auth'
 import path from 'path';
+import md5 from 'md5';
 
 
 const app = express()
@@ -28,29 +30,25 @@ router.use(async (req, res, next) => {
     next()
     return
   }
+
   res.status(401).end()
 })
 
+
+console.log(md5('admin'))
 const port = process.env.PORT || 5000
 
-router.post('/auth', async (req, res) => {
-  const authData = req.body as LoginData
-  const { login, password } = authData
-  const key = await getSession(login, password)
-  
-  if (!key) {
-    res.status(404).send()
-    return
-  }
-  
-  res.cookie('key', key).send()
-})
+router.use(authRouter)
 
 router.get('/', (req, res) => res.send("server"))
 
 router
   .route("/users")
   .post(async (req, res) => {
+    if (!await isAdmin(getKey(req))) {
+      res.status(403).send()
+    }
+
     const count = (req.body as { count?: number })?.count;
     if (!count) {
       res.status(404).send();
@@ -58,6 +56,21 @@ router
     }
 
     const result = await addUsersToDb(generateUsers(count));
+
+    res.status(result ? 200 : 500).send();
+  })
+  .delete(async (req, res) => {
+    if (!await isAdmin(getKey(req))) {
+      res.status(403).send()
+    }
+
+    const email = (req.body as { email?: string })?.email;
+    if (!email) {
+      res.status(404).send();
+      return;
+    }
+
+    const result = await deleteUserFromDbByEmail(email);
 
     res.status(result ? 200 : 500).send();
   })
