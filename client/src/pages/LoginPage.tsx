@@ -13,7 +13,7 @@ const LoginPage = () => {
   const { setIsLogined } = useContext(loginContext);
 
   const tryAuth = async () => {
-    const key = (
+    const status = (
       (
         await axios({
           ...axiosConfig,
@@ -24,15 +24,9 @@ const LoginPage = () => {
             password,
           },
         })
-      ).data as { key: string | null }
-    )?.key;
-
-    if (!key) {
-      setIsFailed(true);
-      return;
-    }
-    setIsLogined(true);
-    document.cookie = `key=${key}`;
+      ).status
+    );
+    if (status === 200) setIsLogined(true);
   };
 
   return (
